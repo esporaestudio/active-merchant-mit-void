@@ -139,6 +139,27 @@ module ActiveMerchant #:nodoc:
         commit('refund', json_post)
       end
 
+      def void(money, authorization, options = {})
+        post = {
+          operation: 'Refund',
+          commerce_id: @options[:commerce_id],
+          user: @options[:user],
+          apikey: @options[:api_key],
+          testMode: (test? ? 'YES' : 'NO'),
+          transaction_id: authorization,
+          auth: authorization,
+          amount: amount(money)
+        }
+        post[:key_session] = @options[:key_session]
+
+        post_to_json = post.to_json
+        post_to_json_encrypt = encrypt(post_to_json, @options[:key_session])
+
+        final_post = '<void>' + post_to_json_encrypt + '</void><dataID>' + @options[:user] + '</dataID>'
+        json_post = final_post
+        commit('void', json_post)
+      end
+
       def supports_scrubbing?
         true
       end
